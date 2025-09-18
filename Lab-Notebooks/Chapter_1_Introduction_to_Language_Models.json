@@ -1,0 +1,991 @@
+{
+  "cells": [
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "EDe7DsPWmEBV"
+      },
+      "source": [
+        "<h1>Chapter 1 - Introduction to Language Models</h1>\n",
+        "<i>Exploring the exciting field of Language AI</i>\n",
+        "\n",
+        "\n",
+        "<a href=\"https://www.amazon.com/Hands-Large-Language-Models-Understanding/dp/1098150961\"><img src=\"https://img.shields.io/badge/Buy%20the%20Book!-grey?logo=amazon\"></a>\n",
+        "<a href=\"https://www.oreilly.com/library/view/hands-on-large-language/9781098150952/\"><img src=\"https://img.shields.io/badge/O'Reilly-white.svg?logo=data:image/svg%2bxml;base64,PHN2ZyB3aWR0aD0iMzQiIGhlaWdodD0iMjciIHZpZXdCb3g9IjAgMCAzNCAyNyIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMTMiIGN5PSIxNCIgcj0iMTEiIHN0cm9rZT0iI0Q0MDEwMSIgc3Ryb2tlLXdpZHRoPSI0Ii8+CjxjaXJjbGUgY3g9IjMwLjUiIGN5PSIzLjUiIHI9IjMuNSIgZmlsbD0iI0Q0MDEwMSIvPgo8L3N2Zz4K\"></a>\n",
+        "<a href=\"https://github.com/HandsOnLLM/Hands-On-Large-Language-Models\"><img src=\"https://img.shields.io/badge/GitHub%20Repository-black?logo=github\"></a>\n",
+        "[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/HandsOnLLM/Hands-On-Large-Language-Models/blob/main/chapter01/Chapter%201%20-%20Introduction%20to%20Language%20Models.ipynb)\n",
+        "\n",
+        "---\n",
+        "\n",
+        "This notebook is for Chapter 1 of the [Hands-On Large Language Models](https://www.amazon.com/Hands-Large-Language-Models-Understanding/dp/1098150961) book by [Jay Alammar](https://www.linkedin.com/in/jalammar) and [Maarten Grootendorst](https://www.linkedin.com/in/mgrootendorst/).\n",
+        "\n",
+        "---\n",
+        "\n",
+        "<a href=\"https://www.amazon.com/Hands-Large-Language-Models-Understanding/dp/1098150961\">\n",
+        "<img src=\"https://raw.githubusercontent.com/HandsOnLLM/Hands-On-Large-Language-Models/main/images/book_cover.png\" width=\"350\"/></a>\n"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "1CijioVCqR56"
+      },
+      "source": [
+        "### [OPTIONAL] - Installing Packages on <img src=\"https://colab.google/static/images/icons/colab.png\" width=100>\n",
+        "\n",
+        "If you are viewing this notebook on Google Colab (or any other cloud vendor), you need to **uncomment and run** the following codeblock to install the dependencies for this chapter:"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "1ve135ClqR57"
+      },
+      "source": [
+        "---\n",
+        "\n",
+        "💡 **NOTE**: We will want to use a GPU to run the examples in this notebook. In Google Colab, go to\n",
+        "**Runtime > Change runtime type > Hardware accelerator > GPU > GPU type > T4**.\n",
+        "\n",
+        "---"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "## Understanding What We're Building\n",
+        "\n",
+        "As discussed in Chapter 1, Large Language Models are built on the transformer architecture from the 2017 \"Attention is All You Need\" paper. The model we're using today, **Phi-3**, is a **decoder-only model** - similar to GPT. These models generate text autoregressively, meaning they predict one token at a time based on all previous tokens.\n",
+        "\n",
+        "Remember from Chapter 1: the \"4k\" in Phi-3-mini-4k-instruct refers to the context window - it can process up to 4,000 tokens at once. This is important because, as we learned, the context length determines how much text the model can \"remember\" during generation."
+      ],
+      "metadata": {
+        "id": "YJBP6BNgVbis"
+      }
+    },
+    {
+      "cell_type": "markdown",
+      "source": ["### Generating Your First Text"],
+      "metadata": {
+        "id": "lmvSGigartoK"
+      }
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "The main source for finding and downloading LLMs is the [HuggingFace Hub](https://huggingface.co/docs/hub/en/index)\n",
+        "\n",
+        "**HuggingFace** is the organization behind the well-known Transformers\n",
+        "package, discussed heavily in the slides."
+      ],
+      "metadata": {
+        "id": "w-OVXIf9r2HD"
+      }
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 3,
+      "metadata": {
+        "id": "M5KpcGTdqR58"
+      },
+      "outputs": [],
+      "source": [
+        "# %%capture\n",
+        "# !pip install transformers>=4.40.1 accelerate>=0.27.2"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "hXp09JFsFBXi"
+      },
+      "source": [
+        "# Phi-3\n",
+        "\n",
+        "The first step is to load our model onto the GPU for faster inference. Note that we load the model and tokenizer separately (although that isn't always necessary)."
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 4,
+      "metadata": {
+        "id": "RSNalRXZyTTk",
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 545,
+          "referenced_widgets": [
+            "b9a30329104644c2b7c67be00153b537",
+            "be3ba577cb3544feb0815f11f3da59f9",
+            "4025b32ad25144e488a116953f0af811",
+            "b4a51d86f36c42e3bc6c4db09240a89f",
+            "4d9294fe85e7427aa8e1ad76571bc2f1",
+            "a6990e4c74004ad2a87b5f7104e0e1b1",
+            "a157839df35841da810a283c3d32cc48",
+            "e2119711d990447e80b2050fe8fe264c",
+            "02050a7f49fd4b07bd58948dcf9b68e3",
+            "6487ef7a1f134a3dae210c43fb9dca9c",
+            "55e6ff8f427348a3960368160799f264",
+            "a9bba1f365fd4678a17a0614e19a726b",
+            "0aef3cff3b4b4c6481756e0eec29e2f9",
+            "9f28d03abcf74512a0427c10d0a5e003",
+            "bd112b7ef607467da5b5e7ad4e3afdbf",
+            "0ba9f0e0a9e74c4eb1bfebe829117f56",
+            "269f19508c584ca9886d8abe40fcd037",
+            "d7ebcfeb16994e93929a59d58a0fe696",
+            "192370854668491690a8eea0cb23260c",
+            "6576a02249a34b4293a4faa09b41e0ec",
+            "82582165981b4d60a8f40a889b576286",
+            "cbc781f156444acb999de4b9f408f72b",
+            "2a2af3035cb94d7e951dd7942e691f4f",
+            "64d787101547491b85482f14f64991fc",
+            "e71f22f69170409a8365139aa983dee7",
+            "f65162a9ae9044108aeaf4ab79ebb51e",
+            "b9ccd668dd2d48b98d0b89f28d1dab7b",
+            "1bd91a5efd1c4cff98623654c2f3cf1b",
+            "41454d5b589c4eeea890ec8f2ddcacde",
+            "251b4351c1424e68893f4791c3679fc5",
+            "ae51448837864668a5a2670d1cb33fcc",
+            "45659351e6bf479a8f76d9dcc3cbe23a",
+            "df11246b7d4541b3b4feddeb77c54f7c",
+            "b524aca961054d7f984cf8e404549eab",
+            "d62375e094ec43a2a77fc4879c8e79dd",
+            "3b2bca0d10064c96b9143cb77a5484f8",
+            "83c17c97cd4b43c4a0095bc84048d550",
+            "efe231323ae24addb5103dbc2c84a173",
+            "ec6277ab27084fabb9fd42409e5e6d89",
+            "1a1b916d91944ff29f70e371f86fd571",
+            "8d6e834b145640e78d0eaa80a5b99862",
+            "d326885d47fc44d595f63528998e7126",
+            "517a778b54e047d0a5b764beb378f81b",
+            "35844745e4ba45eab9ed2315ec019157",
+            "e1c67665ad224536b0f81dbd3e27d9c4",
+            "890cf52eb2fe4a88ad7f956ebf1d9d86",
+            "b1c8b564b29b4eef95c1150a203d8455",
+            "f853aac80fed487c831e2bf6f9651497",
+            "5bd847cc77ca467594734c2b709f3921",
+            "1cf0ffb76563481f90567ccb3323adfe",
+            "9cf975aaee8843a7a1153a2a38d74f6f",
+            "c2d1f8e333d74f0a8f093f4dae85b0a7",
+            "f05ca559c11b4731b6a746663c405277",
+            "9e89aea74a5b472fabf937d1215a64d9",
+            "78bd7dcf6e914843b3cccf9050f6f9bc",
+            "14d7d2d928554344a170148d2062c5c8",
+            "6efe7b1b2c70479a92a602587811ca50",
+            "70caafb205b648f5a7f06804d2f0bae0",
+            "e10277570b7241bbab960c08f29ba4de",
+            "96d001daa51d43a5abd3afd116b75e46",
+            "d1366c4448fa4286b305b2eb1552cdc8",
+            "e4a346f33344461299a9f4da71e69bc3",
+            "edce1a7d46d241cf8e2f48db38e05573",
+            "ca9a81302ff84276a26032cb1c87ab6b",
+            "12224a12dea84470b417522bdf91ea94",
+            "ed44fba3042e4cb19b22725de4130bca",
+            "0e58a8f268ff402699d76994425cfc81",
+            "933e6213296b4ebe8c65feb2100734a4",
+            "354402b6deef4456be70413f4e4c9eb0",
+            "21225251b8004b19902b635a470db65b",
+            "7d5be14b45f442b0aad26cf2028df066",
+            "f759e084d7b1444e9fd09b71d28a6c8d",
+            "98dbf02aaf784a12b2c1c629e7b97c26",
+            "c563b425ec7c4424a9b8008c3231d105",
+            "4a4e5108f12c450a814de21e0da43683",
+            "b77db35e8f374a078cf1d6fccc8511b8",
+            "e4ffea79c3444bfeb4b6727f0303e935",
+            "a225e2a2d80248f9aba07988ddf5ab0b",
+            "72ec9c04c1d7469fbb886650f11072ed",
+            "8d4f9c026fde41a0b460623f2b0347f4",
+            "53c09668fcd1484494697a3658ee5630",
+            "f1006bf345b74f4c8bab87b3dbad0068",
+            "0ac4dedf6ac549fa87d461daa2b5336a",
+            "3a6f53d9b23946079c50ba1df738be95",
+            "d4c1e9634f334277bd1874f3c99d346d",
+            "cd04450ca416451b879bba89b675ea17",
+            "43dbabd4a54c4e91b88f82469b5b007a",
+            "697aaf3eaa924688b7582be02ce2586d",
+            "e14ea3c455fe409683c1f8eff7b5833c",
+            "f2ff7dff81bb444e8e069f335d3e2901",
+            "f22ebe71372a4459bf1aec880b6f12c9",
+            "b4cc664b5559404a9fc7fb22cb5a3ed1",
+            "ed4403599b704cecadd5aa04fbbf675e",
+            "33df9f7ec3f948e8a1a431b2778aa686",
+            "b7abeca653474df484ea0bee520b6ad6",
+            "a07c285d1f194f63aecc71e6381f324d",
+            "c02d3b05e33940d0bcfdb68c564dfbbf",
+            "ff484802f07e46099d52daeb8cadb743",
+            "9ad541872c0040a5852a5843d6b3f548",
+            "1b72986f6dc649688644bf1f5e26fba3",
+            "c44d345b5989402ca3322cf10d4f70d8",
+            "bed122b9c3054e7d86c367c8ff0f07c7",
+            "e2469626ec2945e39cd75c4c7fc37785",
+            "0a9f1497e19f4166898fd1b7507a5a86",
+            "0b2719acaee24e8aafd509f86b505051",
+            "f2555250ab054465b73a4e8bec95d96c",
+            "e7d3a1259da8479a82da66e79b94ce00",
+            "49ff880f692745e6bb55841f8cfa5d58",
+            "4bc9b0160207478c923027e1a9876ec8",
+            "b9cc293d2cd645df991e76392e589bbf",
+            "efdb6db3f80846769e0eec484955f022",
+            "a2be980a944c42a7a279d41307b452ae",
+            "6f150e27b9254b82a45863ca75f4dbfc",
+            "7e0492b5dbe0418aa83f5614521d14ad",
+            "a9452a36d2be4a45af49925afc40409f",
+            "bd8bed047b5742b6baec20a9c0b34ef9",
+            "5e8f32679d7f411e8e98089885b599af",
+            "b498800009e44a7282b870c006eaa81c",
+            "4e3803a6e68940e99b7de1e24fd7546e",
+            "8e2957479d03427794e123b06adb5488",
+            "3bfd6503a04849f5be7e258a038d7855",
+            "8874d5a4e4d54b2b8f0615dc23bc86e2",
+            "d300d783a1d64cb9b46bd22785d79bf9",
+            "af47009cc317492eb718f696ebffc23e",
+            "8664d599bc334cbcbf713ce3baa56770",
+            "52cd31f6741041dc9af884c91440ed94",
+            "2b10509ee4da41cc9c4a748a03815c64",
+            "d3fa7cf4d06a46f4b66dd7cb3b60049d",
+            "8ae126300c384456a19adbd3d359196e",
+            "9756383f74824935a71e0d044b206335",
+            "66ba9473b6184c4cacbeb0b542bfe043",
+            "c210e40da8934480ac69ef3f998cd454"
+          ]
+        },
+        "outputId": "497d37b5-605a-4a98-f0a5-da1394aaf23d"
+      },
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stderr",
+          "text": [
+            "/usr/local/lib/python3.12/dist-packages/huggingface_hub/utils/_auth.py:94: UserWarning: \n",
+            "The secret `HF_TOKEN` does not exist in your Colab secrets.\n",
+            "To authenticate with the Hugging Face Hub, create a token in your settings tab (https://huggingface.co/settings/tokens), set it as secret in your Google Colab and restart your session.\n",
+            "You will be able to reuse this secret in all of your notebooks.\n",
+            "Please note that authentication is recommended but still optional to access public models or datasets.\n",
+            "  warnings.warn(\n"
+          ]
+        },
+        {
+          "output_type": "display_data",
+          "data": {
+            "text/plain": [
+              "config.json:   0%|          | 0.00/967 [00:00<?, ?B/s]"
+            ],
+            "application/vnd.jupyter.widget-view+json": {
+              "version_major": 2,
+              "version_minor": 0,
+              "model_id": "b9a30329104644c2b7c67be00153b537"
+            }
+          },
+          "metadata": {}
+        },
+        {
+          "output_type": "stream",
+          "name": "stderr",
+          "text": ["`torch_dtype` is deprecated! Use `dtype` instead!\n"]
+        },
+        {
+          "output_type": "display_data",
+          "data": {
+            "text/plain": ["model.safetensors.index.json: 0.00B [00:00, ?B/s]"],
+            "application/vnd.jupyter.widget-view+json": {
+              "version_major": 2,
+              "version_minor": 0,
+              "model_id": "a9bba1f365fd4678a17a0614e19a726b"
+            }
+          },
+          "metadata": {}
+        },
+        {
+          "output_type": "display_data",
+          "data": {
+            "text/plain": [
+              "Fetching 2 files:   0%|          | 0/2 [00:00<?, ?it/s]"
+            ],
+            "application/vnd.jupyter.widget-view+json": {
+              "version_major": 2,
+              "version_minor": 0,
+              "model_id": "2a2af3035cb94d7e951dd7942e691f4f"
+            }
+          },
+          "metadata": {}
+        },
+        {
+          "output_type": "display_data",
+          "data": {
+            "text/plain": [
+              "model-00001-of-00002.safetensors:   0%|          | 0.00/4.97G [00:00<?, ?B/s]"
+            ],
+            "application/vnd.jupyter.widget-view+json": {
+              "version_major": 2,
+              "version_minor": 0,
+              "model_id": "b524aca961054d7f984cf8e404549eab"
+            }
+          },
+          "metadata": {}
+        },
+        {
+          "output_type": "display_data",
+          "data": {
+            "text/plain": [
+              "model-00002-of-00002.safetensors:   0%|          | 0.00/2.67G [00:00<?, ?B/s]"
+            ],
+            "application/vnd.jupyter.widget-view+json": {
+              "version_major": 2,
+              "version_minor": 0,
+              "model_id": "e1c67665ad224536b0f81dbd3e27d9c4"
+            }
+          },
+          "metadata": {}
+        },
+        {
+          "output_type": "display_data",
+          "data": {
+            "text/plain": [
+              "Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]"
+            ],
+            "application/vnd.jupyter.widget-view+json": {
+              "version_major": 2,
+              "version_minor": 0,
+              "model_id": "14d7d2d928554344a170148d2062c5c8"
+            }
+          },
+          "metadata": {}
+        },
+        {
+          "output_type": "display_data",
+          "data": {
+            "text/plain": [
+              "generation_config.json:   0%|          | 0.00/181 [00:00<?, ?B/s]"
+            ],
+            "application/vnd.jupyter.widget-view+json": {
+              "version_major": 2,
+              "version_minor": 0,
+              "model_id": "0e58a8f268ff402699d76994425cfc81"
+            }
+          },
+          "metadata": {}
+        },
+        {
+          "output_type": "display_data",
+          "data": {
+            "text/plain": ["tokenizer_config.json: 0.00B [00:00, ?B/s]"],
+            "application/vnd.jupyter.widget-view+json": {
+              "version_major": 2,
+              "version_minor": 0,
+              "model_id": "a225e2a2d80248f9aba07988ddf5ab0b"
+            }
+          },
+          "metadata": {}
+        },
+        {
+          "output_type": "display_data",
+          "data": {
+            "text/plain": [
+              "tokenizer.model:   0%|          | 0.00/500k [00:00<?, ?B/s]"
+            ],
+            "application/vnd.jupyter.widget-view+json": {
+              "version_major": 2,
+              "version_minor": 0,
+              "model_id": "e14ea3c455fe409683c1f8eff7b5833c"
+            }
+          },
+          "metadata": {}
+        },
+        {
+          "output_type": "display_data",
+          "data": {
+            "text/plain": ["tokenizer.json: 0.00B [00:00, ?B/s]"],
+            "application/vnd.jupyter.widget-view+json": {
+              "version_major": 2,
+              "version_minor": 0,
+              "model_id": "1b72986f6dc649688644bf1f5e26fba3"
+            }
+          },
+          "metadata": {}
+        },
+        {
+          "output_type": "display_data",
+          "data": {
+            "text/plain": [
+              "added_tokens.json:   0%|          | 0.00/306 [00:00<?, ?B/s]"
+            ],
+            "application/vnd.jupyter.widget-view+json": {
+              "version_major": 2,
+              "version_minor": 0,
+              "model_id": "efdb6db3f80846769e0eec484955f022"
+            }
+          },
+          "metadata": {}
+        },
+        {
+          "output_type": "display_data",
+          "data": {
+            "text/plain": [
+              "special_tokens_map.json:   0%|          | 0.00/599 [00:00<?, ?B/s]"
+            ],
+            "application/vnd.jupyter.widget-view+json": {
+              "version_major": 2,
+              "version_minor": 0,
+              "model_id": "8874d5a4e4d54b2b8f0615dc23bc86e2"
+            }
+          },
+          "metadata": {}
+        }
+      ],
+      "source": [
+        "from transformers import AutoModelForCausalLM, AutoTokenizer\n",
+        "\n",
+        "# Load model and tokenizer\n",
+        "model = AutoModelForCausalLM.from_pretrained(\n",
+        "    \"microsoft/Phi-3-mini-4k-instruct\",\n",
+        "    device_map=\"cuda\",\n",
+        "    torch_dtype=\"auto\",\n",
+        "    trust_remote_code=False,\n",
+        ")\n",
+        "tokenizer = AutoTokenizer.from_pretrained(\"microsoft/Phi-3-mini-4k-instruct\")"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "Although tokenization will be discussed more comprehensively in Chapter 2, let's have a quick look of how it works:"
+      ],
+      "metadata": {
+        "id": "eW77QK6XWK6K"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "# Understanding Tokenization from Chapter 1\n",
+        "# We know from Chapter 1 that tokenization is converting text to numbers\n",
+        "\n",
+        "# Let's see how Phi-3 tokenizes text\n",
+        "sample_text = \"I love llamas\"\n",
+        "tokens = tokenizer(sample_text)\n",
+        "print(f\"Text: {sample_text}\")\n",
+        "print(f\"Token IDs: {tokens['input_ids']}\")\n",
+        "print(f\"Back to text: {tokenizer.decode(tokens['input_ids'])}\")\n",
+        "\n",
+        "# Notice how the tokenizer splits text into subword units\n",
+        "# This is more sophisticated than the simple word-based tokenization we saw in Chapter 1"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "JvtN6vDXWF4R",
+        "outputId": "d25b9654-568f-486e-c027-af877cd8f598"
+      },
+      "execution_count": 5,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Text: I love llamas\n",
+            "Token IDs: [306, 5360, 11829, 294]\n",
+            "Back to text: I love llamas\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "qdyYYS0E5fEU"
+      },
+      "source": [
+        "Although we can now use the model and tokenizer directly, it's much easier to wrap it in a `pipeline` object:"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 6,
+      "metadata": {
+        "id": "DiUi4Wu1FCyN",
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 124
+        },
+        "outputId": "531449b7-b019-400b-cee1-86fec43c70f3"
+      },
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stderr",
+          "text": [
+            "Device set to use cuda\n",
+            "The following generation flags are not valid and may be ignored: ['temperature']. Set `TRANSFORMERS_VERBOSITY=info` for more details.\n"
+          ]
+        },
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "'\\nKey generation parameters from Chapter 1:\\n\\n- max_new_tokens: Limits generation length. Remember that GPT-style models \\n  are autoregressive - they generate one token at a time.\\n  \\n- do_sample: When False, always picks the most likely next token (greedy).\\n  When True, samples from the probability distribution.\\n  \\n- temperature (not set here): Controls randomness. Low values make the model\\n  more focused and deterministic, high values make it more creative.\\n  \\n- top_p and top_k: Control nucleus and top-k sampling as alternatives to\\n  temperature-based sampling.\\n'"
+            ],
+            "application/vnd.google.colaboratory.intrinsic+json": {
+              "type": "string"
+            }
+          },
+          "metadata": {},
+          "execution_count": 6
+        }
+      ],
+      "source": [
+        "from transformers import pipeline\n",
+        "\n",
+        "# Create a pipeline with hyperparameters we learned about\n",
+        "# As discussed in Chapter 1, these control how the model generates text\n",
+        "\n",
+        "generator = pipeline(\n",
+        "    \"text-generation\",\n",
+        "    model=model,\n",
+        "    tokenizer=tokenizer,\n",
+        "    return_full_text=False,  # Only return newly generated text\n",
+        "    max_new_tokens=500,      # Maximum tokens to generate (remember context windows!)\n",
+        "    do_sample=False          # Deterministic output (greedy decoding)\n",
+        ")\n",
+        "\n",
+        "\"\"\"\n",
+        "Key generation parameters from Chapter 1:\n",
+        "\n",
+        "- max_new_tokens: Limits generation length. Remember that GPT-style models\n",
+        "  are autoregressive - they generate one token at a time.\n",
+        "\n",
+        "- do_sample: When False, always picks the most likely next token (greedy).\n",
+        "  When True, samples from the probability distribution.\n",
+        "\n",
+        "- temperature (not set here): Controls randomness. Low values make the model\n",
+        "  more focused and deterministic, high values make it more creative.\n",
+        "\n",
+        "- top_p and top_k: Control nucleus and top-k sampling as alternatives to\n",
+        "  temperature-based sampling.\n",
+        "\"\"\""
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "mD49kysT5mMY"
+      },
+      "source": [
+        "Finally, we create our prompt as a user and give it to the model:"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 7,
+      "metadata": {
+        "id": "hkR7LBmiyXmY",
+        "outputId": "dc59f9fc-7418-48bf-a95b-2f38cac78f48",
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        }
+      },
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            " Why did the chicken join the band? Because it had the drumsticks!\n"
+          ]
+        }
+      ],
+      "source": [
+        "# The prompt (user input / query)\n",
+        "messages = [\n",
+        "    {\"role\": \"user\", \"content\": \"Create a funny joke about chickens.\"}\n",
+        "]\n",
+        "\n",
+        "# Generate output\n",
+        "output = generator(messages)\n",
+        "print(output[0][\"generated_text\"])"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "### Your Turn: Applying Chapter 1 Concepts\n",
+        "\n",
+        "Now let's practice the concepts from Chapter 1 with hands-on exercises.\n"
+      ],
+      "metadata": {
+        "id": "Wh9PGmSRu0Pw"
+      }
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "#### Exercise 1: Token Vocabulary Exploration\n",
+        "Run this to see how different types of text tokenize differently. Try using different characters."
+      ],
+      "metadata": {
+        "id": "A8J-TmVLXjrq"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "# Exercise 1: Now modify test_texts and add your own examples\n",
+        "print(\"Different text types tokenize differently:\")\n",
+        "print(\"=\" * 60)\n",
+        "\n",
+        "test_texts = {\n",
+        "    \"English\": \"The cat sat on the mat\",\n",
+        "    \"Code\": \"def fibonacci(n): return n if n <= 1 else fibonacci(n-1) + fibonacci(n-2)\",\n",
+        "    \"Numbers\": \"3.14159 2.71828 1.41421\",\n",
+        "    \"Mixed\": \"GPT-3 has 175B parameters.\",\n",
+        "    \"Special\": \"Hello 世界 🦙 #AI\"\n",
+        "}\n",
+        "\n",
+        "for text_type, text in test_texts.items():\n",
+        "    tokens = tokenizer(text)\n",
+        "    print(f\"\\n{text_type}:\")\n",
+        "    print(f\"  Text: '{text[:50]}{'...' if len(text) > 50 else ''}'\")\n",
+        "    print(f\"  Tokens: {len(tokens['input_ids'])}\")\n",
+        "    print(f\"  First 5 token IDs: {tokens['input_ids'][:5]}\")\n"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "rGI0cD8JaCQ-",
+        "outputId": "e10ebdd0-e995-4219-d269-6558faa4bc5c"
+      },
+      "execution_count": 12,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Different text types tokenize differently:\n",
+            "============================================================\n",
+            "\n",
+            "English:\n",
+            "  Text: 'The cat sat on the mat'\n",
+            "  Tokens: 6\n",
+            "  First 5 token IDs: [450, 6635, 3290, 373, 278]\n",
+            "\n",
+            "Code:\n",
+            "  Text: 'def fibonacci(n): return n if n <= 1 else fibonacc...'\n",
+            "  Tokens: 32\n",
+            "  First 5 token IDs: [822, 18755, 265, 21566, 29898]\n",
+            "\n",
+            "Numbers:\n",
+            "  Text: '3.14159 2.71828 1.41421'\n",
+            "  Tokens: 24\n",
+            "  First 5 token IDs: [29871, 29941, 29889, 29896, 29946]\n",
+            "\n",
+            "Mixed:\n",
+            "  Text: 'GPT-3 has 175B parameters.'\n",
+            "  Tokens: 12\n",
+            "  First 5 token IDs: [402, 7982, 29899, 29941, 756]\n",
+            "\n",
+            "Special:\n",
+            "  Text: 'Hello 世界 🦙 #AI'\n",
+            "  Tokens: 11\n",
+            "  First 5 token IDs: [15043, 29871, 30793, 30967, 29871]\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "#### Exercise 2: Autoregressive Generation Steps\n",
+        "Watch how the model generates text token by token:"
+      ],
+      "metadata": {
+        "id": "DPlibOOtXwym"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "# Exercise 2: Change the prompt to see different patterns\n",
+        "print(\"AUTOREGRESSIVE GENERATION\")\n",
+        "print(\"Chapter 1: Decoder models generate one token at a time\")\n",
+        "print(\"=\" * 60)\n",
+        "\n",
+        "prompt = [{\"role\": \"user\", \"content\": \"The attention mechanism in transformers\"}]\n",
+        "\n",
+        "# Generate different lengths to see the progression\n",
+        "for num_tokens in [5, 15, 30]:\n",
+        "    output = generator(prompt, max_new_tokens=num_tokens, do_sample=False)\n",
+        "    print(f\"\\nAfter {num_tokens} tokens:\")\n",
+        "    print(f\"'{output[0]['generated_text']}'\")\n",
+        "\n",
+        "print(\"\\nNotice how each output builds on the previous tokens!\")\n",
+        "\n"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "h4MFNUa2Xy7-",
+        "outputId": "4b224382-6efb-4987-9d65-c2e93866204f"
+      },
+      "execution_count": 13,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "AUTOREGRESSIVE GENERATION\n",
+            "Chapter 1: Decoder models generate one token at a time\n",
+            "============================================================\n",
+            "\n",
+            "After 5 tokens:\n",
+            "' The attention mechanism in transform'\n",
+            "\n",
+            "After 15 tokens:\n",
+            "' The attention mechanism in transformers is a critical component that allows the model to'\n",
+            "\n",
+            "After 30 tokens:\n",
+            "' The attention mechanism in transformers is a critical component that allows the model to weigh the importance of different parts of the input data differently. It was'\n",
+            "\n",
+            "Notice how each output builds on the previous tokens!\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "#### Challenge 3: Comparing Models - Decoder Architecture\n",
+        "Chapter 1 discussed how decoder-only models like GPT generate text.\n",
+        "\n",
+        "Load Qwen/Qwen2.5-1.5B-Instruct and compare it (This could take a little long):"
+      ],
+      "metadata": {
+        "id": "avt5lVc4Zp29"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "# Exercise 3: Comparing decoder-only models\n",
+        "print(\"LOADING QWEN MODEL FOR COMPARISON\")\n",
+        "print(\"=\" * 60)\n",
+        "\n",
+        "# Load Qwen (smaller model for faster loading)\n",
+        "from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline\n",
+        "\n",
+        "print(\"Loading Qwen/Qwen2.5-1.5B-Instruct...\")\n",
+        "qwen_model = AutoModelForCausalLM.from_pretrained(\n",
+        "    \"Qwen/Qwen2.5-1.5B-Instruct\",\n",
+        "    device_map=\"cuda\",\n",
+        "    torch_dtype=\"auto\"\n",
+        ")\n",
+        "qwen_tokenizer = AutoTokenizer.from_pretrained(\"Qwen/Qwen2.5-1.5B-Instruct\")\n",
+        "\n",
+        "qwen_generator = pipeline(\n",
+        "    \"text-generation\",\n",
+        "    model=qwen_model,\n",
+        "    tokenizer=qwen_tokenizer,\n",
+        "    return_full_text=False,\n",
+        "    max_new_tokens=50,\n",
+        "    do_sample=False\n",
+        ")\n",
+        "\n",
+        "# Compare outputs for different prompts\n",
+        "test_prompts = [\n",
+        "    \"Explain neural networks in simple terms:\",\n",
+        "    \"Write a Python function to sort a list:\",\n",
+        "    \"What is the meaning of life?\"\n",
+        "]\n",
+        "\n",
+        "for prompt_text in test_prompts:\n",
+        "    prompt = [{\"role\": \"user\", \"content\": prompt_text}]\n",
+        "\n",
+        "    print(f\"\\nPrompt: '{prompt_text}'\")\n",
+        "    print(\"-\" * 40)\n",
+        "\n",
+        "    phi3_output = generator(prompt, max_new_tokens=30, do_sample=False)\n",
+        "    print(f\"Phi-3: {phi3_output[0]['generated_text'][:100]}...\")\n",
+        "\n",
+        "    qwen_output = qwen_generator(prompt, max_new_tokens=30, do_sample=False)\n",
+        "    print(f\"Qwen:  {qwen_output[0]['generated_text'][:100]}...\")\n",
+        "\n",
+        "print(\"\\nNotice the different styles and capabilities of each model!\")"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "Yo0J9B61b2nX",
+        "outputId": "6fbe13ae-165b-40c0-d700-185bb4eebc5d"
+      },
+      "execution_count": 14,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "LOADING QWEN MODEL FOR COMPARISON\n",
+            "============================================================\n",
+            "Loading Qwen/Qwen2.5-1.5B-Instruct...\n"
+          ]
+        },
+        {
+          "output_type": "stream",
+          "name": "stderr",
+          "text": ["Device set to use cuda\n"]
+        },
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "\n",
+            "Prompt: 'Explain neural networks in simple terms:'\n",
+            "----------------------------------------\n",
+            "Phi-3:  Neural networks are a series of algorithms that attempt to recognize underlying relationships in a ...\n",
+            "Qwen:  Neural networks are a type of machine learning model inspired by the structure and function of the h...\n",
+            "\n",
+            "Prompt: 'Write a Python function to sort a list:'\n",
+            "----------------------------------------\n",
+            "Phi-3:  Certainly! Below is a Python function that sorts a list using the built-in `sorted()` function, whi...\n",
+            "Qwen:  Certainly! Here's an example of a Python function that sorts a list using the built-in `sorted()` fu...\n",
+            "\n",
+            "Prompt: 'What is the meaning of life?'\n",
+            "----------------------------------------\n",
+            "Phi-3:  The meaning of life is a philosophical question concerning the significance of life or existence in...\n",
+            "Qwen:  As an AI language model, I don't have personal beliefs or opinions about what constitutes the \"meani...\n",
+            "\n",
+            "Notice the different styles and capabilities of each model!\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "#### Challenge 4: Autoregressive Generation\n",
+        "Chapter 1 explained that decoder models generate text one token at a time. Let's observe this:"
+      ],
+      "metadata": {
+        "id": "aqI5G2r1Z1NK"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "# Exercise 4: Try different prompts, temperatures, top_p values, etc.\n",
+        "print(\"EXPERIMENT\")\n",
+        "print(\"=\" * 60)\n",
+        "print(\"Change these examples and play with the models:\")\n",
+        "\n",
+        "# Example 1: Story generation with different temperatures\n",
+        "story_prompt = [{\"role\": \"user\", \"content\": \"Once upon a time in a world where\"}]\n",
+        "\n",
+        "print(\"\\n1. Story Generation:\")\n",
+        "for temp in [0.5, 1.0, 1.5, 5.0]:\n",
+        "    output = generator(story_prompt, max_new_tokens=40, do_sample=True, temperature=temp)\n",
+        "    print(f\"\\nTemperature {temp}: {output[0]['generated_text'][:80]}...\")\n",
+        "\n",
+        "# Example 2: Technical explanation\n",
+        "tech_prompt = [{\"role\": \"user\", \"content\": \"The transformer architecture works by\"}]\n",
+        "\n",
+        "print(\"\\n\\n2. Technical Explanation:\")\n",
+        "output = generator(tech_prompt, max_new_tokens=50, do_sample=False)\n",
+        "print(output[0]['generated_text'])\n"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "TUk2fV_mZ3m2",
+        "outputId": "aa0cc955-69db-4927-9784-48c654d8332d"
+      },
+      "execution_count": 22,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "EXPERIMENT\n",
+            "============================================================\n",
+            "Change these examples and play with the models:\n",
+            "\n",
+            "1. Story Generation:\n",
+            "\n",
+            "Temperature 0.5:  Once upon a time in a world where magic and technology coexisted, there was a k...\n",
+            "\n",
+            "Temperature 1.0:  Once upon a time in a world where dragons soared the endless skies and human se...\n",
+            "\n",
+            "Temperature 1.5:  \"Once upon a time in a world where technicolor skies often painted a stark cont...\n",
+            "\n",
+            "Temperature 5.0:  Your request looks as following which seems to imply you wanted A, and would co...\n",
+            "\n",
+            "\n",
+            "2. Technical Explanation:\n",
+            " The transformer architecture works by using self-attention mechanisms to process input data in parallel, rather than sequentially. This allows for more efficient handling of long-range dependencies in data, such as in natural language processing tasks. The transformer\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "# Experiment with the hyperparameters:\n",
+        "'''\n",
+        "print(\"\\nExperiment:\")\n",
+        "temp2 = x.x # change to a float value\n",
+        "output = generator(story_prompt, max_new_tokens=40, do_sample=True, temperature=temp2)\n",
+        "print(f\"\\nTemperature {temp2}: {output[0]['generated_text'][:80]}...\")\n",
+        "'''"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 53
+        },
+        "id": "gT4jYANOempd",
+        "outputId": "c8b67388-cdaa-4f96-b20d-e5c46de0b18f"
+      },
+      "execution_count": 26,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "'\\nprint(\"\\nExperiment:\")\\ntemp2 = x.x # change to a float value\\noutput = generator(story_prompt, max_new_tokens=40, do_sample=True, temperature=temp2)\\nprint(f\"\\nTemperature {temp2}: {output[0][\\'generated_text\\'][:80]}...\")\\n'"
+            ],
+            "application/vnd.google.colaboratory.intrinsic+json": {
+              "type": "string"
+            }
+          },
+          "metadata": {},
+          "execution_count": 26
+        }
+      ]
+    }
+  ],
+  "metadata": {
+    "accelerator": "GPU",
+    "colab": {
+      "gpuType": "T4",
+      "provenance": []
+    },
+    "kernelspec": {
+      "display_name": "Python 3 (ipykernel)",
+      "language": "python",
+      "name": "python3"
+    },
+    "language_info": {
+      "codemirror_mode": {
+        "name": "ipython",
+        "version": 3
+      },
+      "file_extension": ".py",
+      "mimetype": "text/x-python",
+      "name": "python",
+      "nbconvert_exporter": "python",
+      "pygments_lexer": "ipython3",
+      "version": "3.12.9"
+    }
+  },
+  "nbformat": 4,
+  "nbformat_minor": 0
+}
