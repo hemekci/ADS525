@@ -30,7 +30,7 @@ By the end of this course, students will be able to:
 ## Required Resources
 
 - **Primary Textbook:** "Hands-On Large Language Models" by Jay Alammar and Maarten Grootendorst
-- **Code Repository:** [GitHub - HandsOnLLM](https://github.com/HandsOnLLM/Hands-On-Large-Language-Models)
+- **Code Repository:** [GitHub - HandsOnLLM](https://github.com/HandsOnLLM/Hands-On-Large-Language-Models). Note: The notebooks in this repository are extended versions of the ones from the book. 
 - **Platform:** Google Colab (recommended) or local Python environment
 - **Hardware:** Access to GPU resources (T4 or better)
 
