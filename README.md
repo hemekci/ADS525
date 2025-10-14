@@ -1,9 +1,11 @@
 # ADS 525 - Generative AI Engineering with LLMs
 
-**Instructor:** Dr. Hakan Emekci  
-**Course Duration:** 14 Weeks  
-**Credits:** 3  
+**Instructor:** Dr. Hakan Emekci
+**Course Duration:** 14 Weeks
+**Credits:** 3
 **Prerequisites:** Python programming, basic machine learning concepts, linear algebra
+
+**Assistant:** Daniel Quillan Roxas
 
 ## Course Description
 
