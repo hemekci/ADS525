@@ -170,4 +170,19 @@ Why don't chickens make good comedians? Because their 'jokes' always 'feather' t
 | Translation           | Low         | High  | Deterministic output with high probable predicted tokens. Produces coherent output with a wider range of vocabulary, leading to outputs with linguistic variety. |
 
 ### Intro to Prompt Engineering
-An ess
+An essential part of working with text-generative LLMs is prompt engineering. 
+
+#### The Basic Ingredients of a Prompt
+![[Pasted image 20251015054810.png]]A basic prompt consists of two components—the instruction itself and the data that relates to the instruction.
+![[Pasted image 20251015055017.png]]
+![[Pasted image 20251015055106.png]]
+
+#### Instruction-Based Prompting
+This is perhaps the most common, and the only type of prompting most people know. ![[Pasted image 20251015055700.png]]
+![[Pasted image 20251015055732.png]]
+
+Although each task requires different specific instructions, there is a lot of overlap in prompting techniques to improve the quality of the output. The following are some these techniques:
+- **Specificity**
+	Accurately describe what you want to achieve. Instead of writing "Write a description for a product.", instead write "Write a description for a product in less than two sentences and use a formal tone."
+- **Hallucination**
+- **Order**
