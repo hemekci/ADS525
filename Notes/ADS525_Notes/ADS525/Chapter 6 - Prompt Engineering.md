@@ -195,4 +195,43 @@ Although each task requires different specific instructions, there is a lot of o
 #### The Potential Complexity of a Prompt
 In addition to the previously mentioned and used components such as *instructions*, *data*, and *output indicators*, there are advanced components for more complex prompts:
 
-- 
+- **Persona**
+	Describe what role the LLM should take on. It's putting the LLM in a specific character's shoes. Example: "You are a children's storyteller." If you want the LLM to use specific tone and way of writing.
+-  **Instruction** 
+	This is the task itself. This needs to be as specific as possible. The LLM should not have to interpret the instructions.
+- **Context**
+	These are additional information describing the context of the problem or task. It answers questions: "What is the reason for the instruction?"
+- **Format**
+	The format the LLM should use to output the generated text. Without it, the LLM would come up with a format itself.
+- **Audience**
+	The target of the generated text. This describes the level of the generated output. For example, for education purposes, it is helpful to use ELI5 ("Explain it like I'm 5")
+- **Tone**
+	The tone of voice the LLM should use in the generated text. If you are writing a formal email to your boss, you might not want to use an informal tone of voice.
+- **Data**
+	The main data related to the task itself. (e.g., dataset, QA list)
+
+This is illustrated below.
+![[Pasted image 20251015191541.png]]
+![[Pasted image 20251015191601.png]]
+
+You can use your own data by adding it to the `data` variable:
+```python
+# Prompt components
+persona = "You are an expert in Large Language models. You excel at breaking down complex papers into digestible summaries. "
+instruction = "Summarize the key findings of the paper provided. "
+context = "Your summary should extract the most crucial points that can help researchers quickly understand the most vital information of the paper. "
+data_format = "Create a bullet-point summary that outlines the method. Follow this up with a concise paragraph that encapsulates the main results. "
+audience = "The summary is designed for busy researchers that quickly need to grasp the newest trends in Large Language Models. "
+tone = "The tone should be professional and clear. "
+text = "MY TEXT TO SUMMARIZE"
+data = f"Text to summarize: text "
+# The full prompt - remove and add pieces to view its impact on the generated output
+query = persona + instruction + context + data_format + audience + tone + data
+```
+#### In-Context: Providing Examples
+In the previous sections, we tried to accurately describe what the LLM should do. We can provide the LLM with examples of exactly the thing that we want to achieve. This is often referred to as ***in-context learning***, where we provide the model with correct examples.
+
+**In-context learning** comes in a number of forms depending on how many examples you show the LLM:
+1. **Zero-shot prompt:** Prompting without examples.
+2. **Few-shot prompt:** Prompting with more than one example.
+3. **One-shot prompt:** Prompting with a single example
