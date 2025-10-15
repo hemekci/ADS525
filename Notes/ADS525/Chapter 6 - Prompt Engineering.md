@@ -235,3 +235,55 @@ In the previous sections, we tried to accurately describe what the LLM should do
 1. **Zero-shot prompt:** Prompting without examples.
 2. **Few-shot prompt:** Prompting with more than one example.
 3. **One-shot prompt:** Prompting with a single example
+
+![[Pasted image 20251015194630.png]]
+Below, we see an example in the prompt in action. We will need to differentiate between our (`user`) question and the answers that were provided by the model  (`assistant`).  The template below is used for this process:
+```python
+one_shot_prompt = [
+	{
+		"role":"user",
+		"content": "A 'Gigamuru' is a type of Japanese musical instrument. An example of a sentence that uses the word Gigamuru is:"
+	},
+	{
+		"role":"user",
+		"content":"I have a Gigamuru that my uncle gave me as a gift. I love to play it at home."
+	},
+	{
+		"role":"user",
+		"content":"To 'screeg' something is to swing a sword at it. An example of a sentence that uses the word screeg is:"
+	}
+]
+
+print(tokenizer.apply_chat_template(one_shot_prompt, tokenize=False))
+```
+This outputs:
+```
+<s><|user|>
+A 'Gigamuru' is a type of Japanese musical instrument. An example of a sentence that uses the word Gigamuru is:<|end|>
+<|assistant|>
+I have a Gigamuru that my uncle gave me as a gift. I love to play it at home.<|end|>
+<|user|>
+To 'screeg' something is to swing a sword at it. An example of a sentence that uses the word screeg is:<|end|>
+<|assistant|>
+```
+
+As you can see, it is important to the tokenizer and the LLM to have different roles like `user` and `assistant`. Without them, it would look like it is a conversation of a single person.
+
+Using the conversation above, you can generate the output as follows:
+```python
+outputs = pipe(one_shot_prompt)
+print(output[0]["generated_text"])
+```
+This outputs:
+```
+During the intense duel, the knight skillfully screeged his opponent's shield, forcing him to defend himself.
+```
+
+As you can see, this generated the answer. 
+
+This demonstrates the effectiveness of one- or few-shot prompting. 
+
+#### Chain Prompting: Breaking up the Problem
+In the previous examples,  we deconstructed the prompts into multiple components within a prompt (i.e., persona, instruction, tone, etc.). 
+
+While that works for most simple use cases, this technique will not be enough for 
