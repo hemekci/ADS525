@@ -286,4 +286,60 @@ This demonstrates the effectiveness of one- or few-shot prompting.
 #### Chain Prompting: Breaking up the Problem
 In the previous examples,  we deconstructed the prompts into multiple components within a prompt (i.e., persona, instruction, tone, etc.). 
 
-While that works for most simple use cases, this technique will not be enough for 
+While that works for most simple use cases, this technique will not be enough for highly complex prompts. 
+
+As an example, we can ask the LLM to create a product name, slogan, and sales pitch.
+While this can probably be done in one prompt, we can break it up into pieces. Doing this can also improve the quality of the response. This process is illustrated in the diagram below:
+
+![[Pasted image 20251015213214.png]]
+
+This technique of chaining prompts allows the LLM to focus fully on each individual question instead of dealing with multiple requirements at once. This reduces cognitive load and allows each step to build on the previous one, resulting in higher quality responses. Additionally, this technique addresses the 'lost in the middle' problem where information in the middle of long prompts receives less attention than the beginning and end.
+
+An example in python is provided below:
+```python
+product_prompt = [
+	{"role":"user", "content": "Create a name and slogan for a chatbot that leverages LLMs."}
+]
+
+outputs = pipe(product_prompt)
+product_description = outputs[0]["generated_text"]
+print(product_description)
+```
+This outputs:
+```
+Name: 'MindMeld Messenger'
+Slogan: 'Unleashing Intelligent Conversations, One Response at a Time'
+```
+
+Using the generated output above, we can prompt the LLM to generate a sales pitch:
+```python
+# Based on the name and the slogan for a product, generate a sales pitch:
+
+sales_prompt = [
+	{"role":"user", "content": f"Generate a very short sales pitch for the following product: '{product_description}'"}
+]
+
+outputs = pipe(sales_prompt)
+sales_pitch = outputs[0]["generated_text"]
+print(sales_pitch)
+```
+This outputs:
+```
+Introducing MindMeld Messenger - your ultimate communication partner! Unleash intelligent conversations with our innovative AI-powered messaging platform. With MindMeld Messenger, every response is thoughtful, personalized, and timely. Say goodbye to generic replies and hello to meaningful interactions. Elevate your communication game with MindMeld Messenger - where every message is a step toward smarter conversations. Try it now and experience the future of messaging!
+```
+
+In addition to the previously mentioned benefits of using chaining, a major one is that we can give each call different parameters. For instance, **the number of tokens** created was relatively small for the name and slogan whereas the pitch can be much longer.
+
+In addition to that, parameters like *temperature, top_p*, etc. can also be adjusted according to the prompt, isolated from the entire prompt.
+
+This can be used for a variety of use cases, including:
+
+- ***Response validation***
+	Ask the LLM to double check previously generated outputs.
+- ***Parallel prompts***
+	Create multiple prompts in parallel and do a final pass to merge them. For example, ask multiple LLMs to generate multiple recipes in parallel and use the combined result to create a shopping list.
+- ***Writing Stories***
+	Leverage the LLM to write books or stories by breaking down the problem into components. For example, by first writing a summary, developing characters, and building the story beats before diving into creating the dialogue. 
+
+#### Reasoning with Generative Models
+**Reasoning** is a core component of human intelligence and is often compared to the emergent behavior 
