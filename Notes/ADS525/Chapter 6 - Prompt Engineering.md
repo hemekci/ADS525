@@ -351,4 +351,19 @@ We try to mimic actual reasoning by using prompt engineering.
 To be able to effectively mimic this reasoning behavior, we first have to understand what actually constitutes `reasoning`.
 
 	Oue methods of reasoning can be divided into system 1 and system 2 thinking processes:
-- **System 1:** 
+- **System 1:** represents an automatic, intuitive, and near-instantaneous process. *It shares similarities with generative models that automatically generate tokens without any self-reflective behavior.*
+- **System 2:** is a conscious, slow, and logical process, akin to brainstorming and *self-reflection*.
+
+#### Chain-of-Thought: Think Before Answering
+
+The first and major step toward complex reasoning in generative models was through a method called chain-of-thought. Chain-of-thought aims to have the generative model *think first* rather than answering the question directly without any reasoning.
+
+This is illustrated in the diagram below. The reasoning processes are referred to as "thoughts". Adding this reasoning step allows the model to distribute more compute over the reasoning process.
+![[Pasted image 20251018042040.png]]
+
+We use the example the authors used in their paper to demonstrate this:
+```python
+# Answering with chain-of-thought
+
+
+```
