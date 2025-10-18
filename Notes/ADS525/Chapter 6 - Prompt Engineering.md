@@ -364,6 +364,63 @@ This is illustrated in the diagram below. The reasoning processes are referred t
 We use the example the authors used in their paper to demonstrate this:
 ```python
 # Answering with chain-of-thought
-
-
+cot_prompt = [
+	{"role":"user","content":"Roger has 5 tennis balls. He buys 2 more cans of tennis balls. Each can has 3 tennis balls. How many tennis balls does he have now?"},
+	{"role":"assitant", "content":"Roger started with 5 balls. 2 cans of 3 tennis balls each is 6 tennis balls. 5 + 6 = 11. The answer is 11."},
+	{"role":"user", "content":"The cafeteria had 3 apples. If they used 20 to make lunch and bought 6 more, how many apples do they have?"}
+]
 ```
+
+Generate output:
+```python
+outputs = pipe(cot_prompt)
+print(outputs[0]["generated_text"])
+```
+
+This outputs:
+```markdown
+The cafeteria started with 23 apples. They used 20 apples, so they had 23 - 20 - 3 apples left. Then they bought 6 more apples, so now they have 3 + 6 = 9 apples. The answer is 9.
+```
+
+As you can see in the example above, the response is not just the answer itself, but it also includes a step-by-step *'reasoning'*.
+
+Although this is a great method of enhancing the output, it requires one or more examples of reasoning in the prompt. 
+
+Instead of having to provide multiple examples, we can instead use ***zero-shot chain-of-thought.***
+
+***Zero-shot COT*** is illustrated below:
+![[Pasted image 20251018170625.png]]
+
+In this example, instead of providing examples, we instead give it the phrase *"Let's think step-by-step."*
+
+```python
+# Zero-shot chain-of-thought
+zeroshot_cot_prompt = [
+	{"role":"user","content":"The cafeteria had 23 apples. If they used 20 to make lunch and bought 6 more, how many apples do they have? Let's think step-by-step."}
+]
+```
+
+Generate output:
+```python
+outputs = pipe(zeroshot_cot_prompt)
+print(outputs[0]["generated_text"])
+```
+
+This outputs:
+```markdown
+Step 1: Start with the initial number of apples, which is 23. 
+Step 2: Subtract the number of apples used to make lunch, which is 20. So, 23 - 20 = 3 apples remaining.
+Step 3: Add the number of apples bought, which is 6. So, 3 + 6 = 9 apples.
+
+The cafeteria has now 9 apples.
+```
+
+As you can see, even without any example, the model is able to generate an output similar to the one where examples were used.
+
+
+> [!tip] TIP
+> Although in the example *'Let's think step-by-step'* is used, other instructions can also be used. 
+> 
+> Alternatives like *'Take a deep breath and think step-by-step'*, and *'Let's work through this problem step-by-step'* are also used.
+
+
