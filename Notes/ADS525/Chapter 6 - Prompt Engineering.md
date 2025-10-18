@@ -423,4 +423,89 @@ As you can see, even without any example, the model is able to generate an outpu
 > 
 > Alternatives like *'Take a deep breath and think step-by-step'*, and *'Let's work through this problem step-by-step'* are also used.
 
+#### Self-Consistency: Sampling Outcomes
 
+Using the same prompt can lead to different prompts if we configure parameters like `top_p` and `temperature` to allow for more *creativity*.
+
+To counteract this, ***self-consistency was introduced***. It works by prompting the model multiple times using the same prompt, and by taking the majority result as the final result. During this process, each answer could be affected by different `temperature` and `top_p` values to increase diversity.
+
+Note that only **extractable information** is considered, not every word itself. This is illustrated below.
+
+![[Pasted image 20251018175740.png]]
+
+An obvious issue with this technique is the need to prompt the model multiple times. Prompting the model *n* times slows down the model by *n* times. 
+
+#### Tree-of-Thought: Exploring Intermediate Steps
+
+While the techniques ***chain-of-thought*** and ***self-consistency*** enable more complex reasoning by sampling from multiple thought patterns, ***tree-of-thought*** takes this to a deeper level.
+
+**Tree-of-thought** works as follows:
+- When faced with a problem that requires multiple reasoning steps, it often helps to break it down to pieces.
+- At each step, the model is prompted to explore different solutions at hand. It then votes for the best solution and continues to the next step.
+![[Screenshot from 2025-10-18 18-08-31.png]]
+
+This method is helpful when needing to consider multiple paths. A disadvantage is the need for many calls to the model, which slows the process significantly.
+
+Fortunately, there has been a successful attempt to convert the tree-of-thought  framework into a single prompting technique. 
+
+*Instead of calling multiple times, we prompt the model to mimic that behavior by creating a conversation between multiple experts.*
+
+```python
+# Zero-shot tree-of-thought
+zeroshot_tot_prompt = [
+	{"role":"user", "content":"Imagine three different experts are answering this question. All experts will write down 1 step of their thinking, then share it with the group. Then all experts will go to the next step, etc. If any expert realizes they're wrong at any point then they leave. The question is 'The cafeteria had 23 apples. If they used 20 to make lunch and bought 6 more, how many apples do they have?' Make sure to discuss the results."}
+]
+```
+
+Use this prompt:
+```python
+outputs = pipe(zeroshot_tot_prompt)
+print(outputs[0]["generated_text"])
+```
+
+This outputs:
+```markdown
+Expert 1: Step 1 - Start with the initial number of apples: 23 apples.
+Expert 2: Step 1 - Subtract the apples used for lunch: 23 - 20 = 3 apples remaining.
+Expert 3: Step 1 - Add the newly bought apples: 3 + 6 = 9 apples.
+
+Expert 1: Step 2 - Confirm the final count: The cafeteria has 9 apples.
+Expert 2: Step 2 - Review the calculations: 23 - 20 = 3, then 3 + 6 = 9. The calculations are correct.
+Expert 3: Step 2 - Agree with the result: The cafeteria indeedhas 9 apples.
+
+All experts agree on the final count: The cafeteria has 9 apples.
+```
+
+
+#### Output Verification
+
+Reasons for validating the output might include:
+- **Structured output**
+	Most generative models create free-form text without following a particular template. Some use cases require structured output in formats like JSON.
+- **Valid output** 
+	Even with a correct format, it is important to validate the actual content of the output.
+- **Ethics**
+	Some models have no guardrails and generate inappropriate outputs. Examples are bias, cultural stereotypes, personally identifiable information (PII), etc.
+- **Accuracy**
+	The aim is to double-check whether the output is factual, coherent, and free from hallucination.
+
+While parameters like `temperature` and `top_p` influence the output, there are generally three ways to control it:
+- **Examples**
+	As we have seen use in few-shot COT, providing a number of examples of the expected output helps improve the performance of the model. 
+- **Grammar**
+	Control the token selection process.
+- **Fine-tuning**
+	Also discussed in this chapter, fine-tuning helps control what and how the the model generates.
+
+#### Providing Examples
+
+As we have seen, few-shot is helpful in telling the model how we want the output to be. The following is an example of this:
+
+In this example, we want the model to create a character profile from an RPG game. 
+
+```python
+# Zero-shot learning: Providing no examples
+zeroshot_prompt = [
+	{"role":"user", "content":"Create a "}
+]
+```
