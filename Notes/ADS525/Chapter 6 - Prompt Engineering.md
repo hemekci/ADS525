@@ -342,4 +342,13 @@ This can be used for a variety of use cases, including:
 	Leverage the LLM to write books or stories by breaking down the problem into components. For example, by first writing a summary, developing characters, and building the story beats before diving into creating the dialogue. 
 
 #### Reasoning with Generative Models
-**Reasoning** is a core component of human intelligence and is often compared to the emergent behavior 
+**Reasoning** is a core component of human intelligence and is often compared to the emergent behavior of LLMs that often `resembles` reasoning. 
+
+Note that we use the word `resemble`. As of the time of writing, outputs of LLMs are simply results of the data it has been trained on, and pattern matching. 
+
+We try to mimic actual reasoning by using prompt engineering. 
+
+To be able to effectively mimic this reasoning behavior, we first have to understand what actually constitutes `reasoning`.
+
+	Oue methods of reasoning can be divided into system 1 and system 2 thinking processes:
+- **System 1:** 
