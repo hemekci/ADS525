@@ -506,6 +506,177 @@ In this example, we want the model to create a character profile from an RPG gam
 ```python
 # Zero-shot learning: Providing no examples
 zeroshot_prompt = [
-	{"role":"user", "content":"Create a "}
+	{"role":"user", "content":"Create a character profile for a RPG game in JSON format."}
 ]
 ```
+
+Generate output:
+```python
+outputs = pipe(zeroshot_prompt)
+print(outputs[0]["generated_text"])
+```
+
+This outputs:
+
+```json
+{
+"characterProfile": {
+"name": "Eldrin Stormbringer",
+"class": "Warlock",
+"race": "Half-Elf",
+"age": 27,
+"gender": "Male",
+"alignment": "Chaotic Good",
+"background": "Rogue",
+…
+},
+"attributes": {
+"strength": 10,
+"dexterity": 17,
+"constitution": 12,
+"intelligence": 12,
+"wisdom": 10,
+"charisma
+```
+
+As you can see, the output is not completed, and is truncated after `charisma`. This is not valid and may cause issues in production.
+
+Let's see how applying one-shot learning addresses this:
+```python
+one_shot_template = """Create a short character profile for an RPG game. Make sure to only use this format:
+{
+	"description": "A SHORT DESCRIPTION",
+	"name": "THE CHARACTER'S NAME",
+	"armor": "ONE PIECE OF ARMOR",
+	"weapon": "ONE OR MORE WEAPONS"
+}
+"""
+one_shot_prompt = [
+	{"role": "user", "content": one_shot_template}
+]
+# Generate the output
+outputs = pipe(one_shot_prompt)
+print(outputs[0]["generated_text"])
+```
+
+This outputs:
+```json
+{
+	"description": "A cunning rogue with a mysterious past,
+	skilled in stealth and deception.",
+	"name": "Lysandra Shadowstep",
+	"armor": "Leather Cloak of the Night",
+	"weapon": "Dagger of Whispers, Throwing Knives"
+}
+```
+
+The model perfectly followed the example we gave it, which allows for more consistent behavior.
+
+It is important to realize that while this model generated an output in the desired format, this is not always the case. Some models are better at following patterns and instructions than others.
+
+#### Grammar: Constrained Sampling
+
+**Few-shot learning has a big disadvantage:** we cannot explicitly prevent certain output from being generated. 
+
+Packages have been developed to constrain and validate the output of generative models. They use the model to validate their own output. This process can be seen in the diagram below.
+![[Pasted image 20251019010004.png]]
+
+
+This process can be taken one step further and instead of validating the output we can already perform validation during the token sampling process.
+![[Pasted image 20251019030929.png]]
+
+So instead of taking into account all possible next token, we have a set of words/tokens we consider 'legal'. Instead of picking any highest probability next word, it picks the highest probability legal word.
+
+Let's illustrate this.
+
+Since we are loading a new model, it is advised to restart the notebook:
+```python
+import gc
+import torch
+del model, tokenizer, pipe
+
+# Flush memory
+gc.collect()
+torch.cuda.empty_cache()
+```
+
+```python
+from llama_cpp.llama import Llama
+# Load Phi-3
+llm = Llama.from_pretrained(
+	repo_id="microsoft/Phi-3-mini-4k-instruct-gguf",
+	filename="*fp16.gguf",
+	n_gpu_layers=-1,
+	n_ctx=2048,
+	verbose=False
+)
+```
+
+To generate the output using the internal JSON grammar, we only need to specify the response_format as a JSON object.
+```python
+# Generate output
+output = llm.create_chat_completion(
+messages=[
+	{"role": "user", "content": "Create a warrior for an RPG in JSON format."},
+	],
+	response_format={"type": "json_object"},
+	temperature=0,
+)['choices'][0]['message']["content"]
+```
+
+To check whether the output actually is JSON:
+```python
+import json
+
+# Format as json
+json_output = json.dumps(json.loads(output), indent=4)
+print(json_output)
+```
+
+This outputs:
+```json
+{
+	"name": "Eldrin Stormbringer",
+	"class": "Warrior",
+	"level": 10,
+	"attributes": {
+		"strength": 18,
+		"dexterity": 12,
+		"constitution": 16,
+		"intelligence": 9,
+		"wisdom": 14,
+		"charisma": 10
+	},
+	"skills": {
+		"melee_combat": {
+			"weapon_mastery": 20,
+			"armor_class": 18,
+			"hit_points": 35
+	},
+	"defense": {
+		"shield_skill": 17,
+		"block_chance": 90
+	},
+	"endurance": {
+		"health_regeneration": 2,
+		"stamina": 30
+	}
+	},
+	"equipment": [
+		{
+			"name": "Ironclad Armor",
+			"type": "Armor",
+			"defense_bonus": 15
+		},
+		{
+			"name": "Steel Greatsword",
+			"type": "Weapon",
+			"damage": 8,
+			"critical_chance": 20
+		}
+	],
+	"background": "Eldrin grew up in a small village on the outskirts of a war-torn land. Witnessing the brutality and suffering caused by conflict, he dedicated his life to becoming a formidable warrior who could protect those unable to defend themselves."
+}
+```
+
+The output is properly formatted as JSON. As we can see, using this method lets us use the model more confidently where we want the output to follow very specific rules/templates.
