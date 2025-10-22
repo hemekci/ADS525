@@ -8,17 +8,17 @@
         "type": "tabs",
         "children": [
           {
-            "id": "85ca1503057f2f6e",
+            "id": "3f767a737bb04bce",
             "type": "leaf",
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Chapter 6 - Prompt Engineering.md",
+                "file": "Chapter 7 - Advanced Text Generation Techniques and Tools.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "Chapter 6 - Prompt Engineering"
+              "title": "Chapter 7 - Advanced Text Generation Techniques and Tools"
             }
           }
         ]
@@ -171,8 +171,12 @@
       "audio-recorder:Start/stop recording": false
     }
   },
-  "active": "85ca1503057f2f6e",
+  "active": "3f767a737bb04bce",
   "lastOpenFiles": [
+    "Pasted image 20251021141524.png",
+    "Pasted image 20251021113933.png",
+    "Chapter 6 - Prompt Engineering.md",
+    "Chapter 7 - Advanced Text Generation Techniques and Tools.md",
     "Pasted image 20251019030929.png",
     "Pasted image 20251019010004.png",
     "Screenshot from 2025-10-18 18-08-31.png",
@@ -182,10 +186,7 @@
     "Pasted image 20251018175740.png",
     "Pasted image 20251018175647 1.png",
     "Pasted image 20251018175647.png",
-    "Pasted image 20251018170625.png",
-    "Pasted image 20251018042040.png",
     "Recording 20251018040621.m4a",
-    "Ch",
-    "Chapter 6 - Prompt Engineering.md"
+    "Ch"
   ]
 }
