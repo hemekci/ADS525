@@ -566,3 +566,101 @@ During this process, the agent describes its **thoughts** (what it should do), i
 
 This goes on iteratively (in cycle).
 
+#### ReAct in LangChain
+
+To illustrate **ReAct** in action, let's build a pipeline that can search the web for answers and perform calculations with a calculator.
+
+So far, we've been using `Phi-3`, a small model that is not sufficient to run these examples. Let's use OpenAI's GPT-3.5 model as it follows these instructions more closely:
+
+```python
+import os
+from langchain_openai import ChatOpenAI
+
+# Load OpenAI's LLMs with LangChain
+os.environ["OPENAI_API_KEY"] = "MY_KEY"
+openai_llm = ChatOpenAI(model_name="gpt-3.5-turbo", temperature=0)
+```
+
+Let's create the template for ReAct:
+```python
+# Create the ReAct template
+react_template = """Answer the following questions as best you
+can. You have access to the following tools:
+
+{tools}
+
+Use the following format:
+Question: the input question you must answer
+Thought: you should always think about what to do
+Action: the action to take, should be one of [{tool_names}]
+Action Input: the input to the action
+Observation: the result of the action
+... (this Thought/Action/Action Input/Observation can repeat N
+times)
+Thought: I now know the final answer
+Final Answer: the final answer to the original input question
+
+Begin!
+
+Question: {input}
+Thought:{agent_scratchpad}"""
+prompt = PromptTemplate(
+	template=react_template,
+	input_variables=["tools", "tool_names", "input",
+"agent_scratchpad"]
+)
+```
+
+The template shows the process of starting with a question and generating intermediate **thoughts, actions, and observations.** 
+
+To enable it to interact with external tools better, we will describe what these tools are:
+```python
+from langchain.agents import load_tools, Tool
+from langchain.tools import DuckDuckGoSearchResults
+
+# You can create the tool to pass to an agent
+search = DuckDuckGoSearchResults()
+search_tool = Tool(
+name="duckduck",
+	description="A web search engine. Use this to as a search
+	engine for general queries.",
+	func=search.run,
+)
+
+# Prepare tools
+tools = load_tools(["llm-math"], llm=openai_llm)
+tools.append(search_tool)
+```
+
+The tools include the DuckDuckGo search engine and a math tool that to access a basic calculator.
+
+Now that we have defined everything we need, let's create the ReAct agent and pass it to the `AgentExecutor`, which handles executing the steps:
+
+```python
+from langchain.agents import AgentExecutor, create_react_agent# Construct the ReAct agent
+agent = create_react_agent(openai_llm, tools, prompt)
+agent_executor = AgentExecutor(
+	agent=agent, tools=tools, verbose=True,
+handle_parsing_errors=True
+)
+```
+
+Let's test whether this works:
+```python
+# What is the price of a MacBook Pro?
+agent_executor.invoke(
+	{
+		"input": "What is the current price of a MacBook Pro in USD? How much would it cost in EUR if the exchange rate is 0.85 EUR for 1 USD."
+	}
+)
+```
+
+While executing, the model generates multiple steps similar to the one illustrated below:
+![[Pasted image 20251023181820.png]]
+
+When finished, the model gives an output like this:
+```markdown
+{'input': 'What is the current price of a MacBook Pro in USD? How much would it cost in EUR if the exchange rate is 0.85 EUR for 1 USD?',
+'output': 'The current price of a MacBook Pro in USD is$2,249.00. It would cost approximately 1911.65 EUR with an exchange rate of 0.85 EUR for 1 USD.'}
+
+```
