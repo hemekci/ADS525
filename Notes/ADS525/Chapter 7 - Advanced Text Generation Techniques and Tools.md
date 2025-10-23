@@ -516,3 +516,25 @@ More **Pros and Cons** can be read below:
 | Windowed Conversation Buffer | - Large-context LLMs are not needed unless<br>chat history is large<br><br>- No information loss over the last k interactions | - Only captures the last k interactions<br><br>- No compression of the last k interactions                                                                            |
 | Conversation Summary         | - Captures the full history<br><br>- Enables long conversations<br><br>- Reduces tokens needed to capture full history        | - An additional call is necessary for each<br>interaction<br><br>- Quality is reliant on the LLM’s summarization capabilities                                         |
 #### Agents: Creating a System of LLMs
+
+So far, the tools and systems we've explored follow a user-defined set of steps. One of the most promising concepts in LLMs is their ability to take actions on their own. 
+
+This is often called **agents**, systems that leverage a language model to determine which actions to take.
+
+**Agents** can make use of everything we've discussed so far (I/O, chains, and memory). It is extended further to ***two vital components***
+1. **Tools** that agents can use to do things that it wouldn't be able to do on its own
+2. The **agent type**, which plans the action to take or tools to use.
+
+Unlike chains, agents are more able and can do things like creating and self-correcting. 
+
+For example, LLMs are not good at math. Instead of asking it to solve an equation, we can provide it access to a calculator. Integration of tools such as this helps improve the answers. 
+
+Furthermore, by providing LLMs with multiple tools, they would have the ability to choose the best tool for a specific query.
+
+![[Pasted image 20251023173843.png]]
+
+In this example, we provided the LLM access to a calculator. But this could be extended to more powerful tools like a search engine, or weather API. 
+
+Although the tools they use are important, the driving force of many agent-based systems is the use a framework called **Re**asoning and **Act**ing (**ReAct**).
+
+#### The Driving Power Behind Agents: Step-By-Step Reasoning
