@@ -294,5 +294,151 @@ llm_chain = LLMChain(
 )
 ```
 
-Let's check 
+Let's check whether we did this correctly:
+
+```python
+# Generate a conversation and ask a basic question
+
+llm_chain.invoke({"input_prompt": "Hi! My name is Maarten. What is 1 + 1?"})
+```
+
+```markdown
+{'input_prompt': 'Hi! My name is Maarten. What is 1 + 1?',
+'chat_history': ',
+'text': " Hello Maarten! The answer to 1 + 1 is 2. Hope you're having a great day!"}
+```
+
+You can find the generated text in the '`text`' key, the input prompt in '`input_prompt`', and the chat history in '`chat_history`'.
+
+As you can see, `chat_history: `, there is no chat history as this is the first time we used this specific chain.
+
+Let's try again:
+```python
+# Does the LLM remember the name we gave it?
+llm_chain.invoke({"input_prompt": "What is my name?"})
+```
+
+```markdown
+{'input_prompt': 'What is my name?',
+'chat_history': "Human: Hi! My name is Maarten. What is 1 + 1?
+\nAI: Hello Maarten! The answer to 1 + 1 is 2. Hope you're having a great day!",
+'text': ' Your name is Maarten.'}
+```
+![[Pasted image 20251023151734.png]]
+
+By using `chat_history`, the LLM is able to retrieve the name.
+
+#### Windowed Conversation Buffer
+
+While using the entire previous chat history as an input is effective in retrieving information and creating memory, this creates a problem. 
+
+We know that every LLM has ***content window***, a number of total tokens a model can take in as input. As the conversation goes on, the context window is reached fast.
+
+One method of addressing that is by using only the last *k* conversations instead of using the entire history. 
+
+In LangChain, we use **`ConversationBufferWindowMemory`** to decide how many past conversations to include in memory. 
+
+```python
+from langchain.memory import ConversationBufferWindowMemory
+
+# Retain only the last 2 conversations in memory
+memory = ConversationBufferWindowMemory(k=2, memory_key="chat_history")
+
+# Chain the LLM, prompt, and memory together
+llm_chain = LLMChain(
+	prompt=prompt,
+	llm=llm,
+	memory=memory
+)
+```
+
+Let's try out a series of questions:
+```python
+# Ask two questions and generate two conversations in its memory
+llm_chain.predict(input_prompt="Hi! My name is Maarten and I am 33 years old. What is 1 + 1?")
+
+llm_chain.predict(input_prompt="What is 3 + 3?")
+```
+
+This outputs:
+
+```markdown
+{'input_prompt': 'What is 3 + 3?',
+'chat_history': "Human: Hi! My name is Maarten and I am 33 years old. What is 1 + 1?\nAI: Hello Maarten! It's nice to meet you. Regarding your question, 1 + 1 equals 2. If you have any other questions or need further assistance, feel free to ask!\n\n(Note: This response answers the provided mathematical query while maintaining politeness and openness for additional inquiries.)",
+'text': " Hello Maarten! It's nice to meet you as well. Regarding your new question, 3 + 3 equals 6. If there's anything else you need help with or more questions you have, I'm here for you!"}
+```
+
+The interaction we had this far is shown in `chat_history`. Note that under the hood, LangChain saves it as an interaction between the user (shown as `Human`) and the LLM (shown as `AI`).
+
+Let's check whether it can answer a question regarding the name:
+```python
+# Check whether it knows the name we gave it
+llm_chain.invoke({"input_prompt":"What is my name?"})
+```
+
+```markdown
+{'input_prompt': 'What is my name?',
+'chat_history': "Human: Hi! My name is Maarten and I am 33 years old. What is 1 + 1?\nAI: Hello Maarten! It's nice to meet you. Regarding your question, 1 + 1 equals 2. If you have any other questions or need further assistance, feel free toask!\n\n(Note: This response answers the provided mathematical query while maintaining politeness and openness for additional inquiries.)\nHuman: What is 3 + 3?\nAI: Hello Maarten! It's
+nice to meet you as well. Regarding your new question, 3 + 3
+equals 6. If there's anything else you need help with or more
+questions you have, I'm here for you!",
+'text': ' Your name is Maarten, as mentioned at the beginning
+of our conversation. Is there anything else you would like to
+know or discuss?'}
+```
+
+Based on the output in '`text`' it correctly remembers the name we gave it. Note that the chat history is updated with the previous question.
+
+We know that we set `k = 2` for `ConversationBufferWindowMemory`, meaning we only retain information from the last 2 conversations. 
+
+Let's test this and see whether the model remembers the age we provided.
+
+```python
+# Check whether it knows the age we gave it
+
+llm_chain.invoke({"input_prompt":"What is my age?"})
+```
+
+```markdown
+{'input_prompt': 'What is my age?',
+'chat_history': "Human: What is 3 + 3?\nAI: Hello again! 3 + 3 equals 6. If there's anything else I can help you with, just let me know!\nHuman: What is my name?\nAI: Your name is Maarten.",
+'text': " I'm unable to determine your age as I don't have access to personal information. Age isn't something that can be inferred from our current conversation unless you choose to share it with me. How else may I assist you today?"}
+```
+
+As you can see in the response, the LLM outputs the expected information. It doesn't have access to the age information.
+
+You can probably imagine that this could be an issue for lengthier conversations. Conversation Summary addresses that.
+
+#### Conversation Summary
+We see that the last 2 ways we can retain memory have issues, both regarding the context window. **Conversation Summary** completely addresses this as it is a technique that *summarizes* an entire conversation history to distill it into the main points. 
+
+This gets rid or significantly reduces the impact of the number and the length of previous conversations.
+
+The summarization process is handled by an **external LLM**. It is given the entire conversation history as input and asked to create a *concise* summary. 
+
+![[Pasted image 20251023163256.png]]
+
+This means that whenever we ask the LLM a question, there are **two calls:**
+- **The user prompt**
+- **The summarization prompt**
+
+To use this in **LangChain**, we first need to prepare a summarization template that we will use as the summarization prompt:
+```python
+# Create a summary prompt template
+summary_prompt_template = """<s><|user|>Summarize the
+conversations and update with the new lines.
+
+Current summary:
+{summary}
+
+new lines of conversation:
+{new_lines}
+
+New summary:<|end|>
+<|assistant|>"""
+summary_prompt = PromptTemplate(
+	input_variables=["new_lines", "summary"],
+	template=summary_prompt_template
+)
+```
 
