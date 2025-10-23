@@ -442,3 +442,77 @@ summary_prompt = PromptTemplate(
 )
 ```
 
+Using `ConversationSummaryMemory` in LangChain is similar to what we did previously.
+
+```python 
+from langchain.memory import ConversationSummaryMemory
+
+# Define the type of memory we will use
+memory = ConversationSummaryMemory(
+	llm=llm,
+	memory_key="chat_history",
+	prompt=summary_prompt
+)
+
+# Chain the LLM, prompt, and memory together
+llm_chain = LLMChain(
+	prompt=prompt,
+	llm=llm,
+	memory=memory
+)
+```
+
+Let's test out its summarization capabilities:
+```python
+# Generate a conversation and ask for the name
+llm_chain.invoke({"input_prompt": "Hi! My name is Maarten. What is 1 + 1?"})
+
+llm_chain.invoke({"input_prompt": "What is my name?"})
+```
+
+```markdown
+{'input_prompt': 'What is my name?',
+'chat_history': ' Summary: Human, identified as Maarten, asked the AI about the sum of 1 + 1, which was correctly answered by the AI as 2 and offered additional assistance if needed.',
+'text': ' Your name in this context was referred to as "Maarten". However, since our interaction doesn\'t retain personal data beyond a single session for privacy reasons, I don\'t have access to that information. How can I assist you further today?'}
+```
+
+After each step, conversations are summarized up to that point.
+
+```python
+# Check whether it has summarized everything thus far
+llm_chain.invoke({"input_prompt": "What was the first question I asked?"})
+```
+
+```markdown
+{'input_prompt': 'What was the first question I asked?',
+'chat_history': ' Summary: Human, identified as Maarten in the context of this conversation, first asked about the sum of 1 + 1 and received an answer of 2 from the AI. Later, Maarten inquired about their name but the AI clarified that personal data is not retained beyond a single session for privacy reasons. The AI offered further assistance if needed.',
+'text': ' The first question you asked was "what\'s 1 + 1?"'}
+```
+
+To get the most recent summary, we can access the memory variable we created previously:
+```python
+memory.load_memory_variables({})
+```
+
+```markdown
+{'chat_history': ' Maarten, identified in this conversation, initially asked about the sum of 1+1 which resulted in an answer from the AI being 2. Subsequently, he sought clarification on his name but the AI informed him that no personal data is retained beyond a single session due to privacy reasons. The AI then offered further assistance if required. Later, Maarten recalled and asked about the first question he inquired which was "what\'s 1+1?"'}
+```
+
+This is more complicated than Conversation Buffer.
+![[Pasted image 20251023165404.png]]
+
+While this decreases the tokens used in the conversation by a lot,
+its **disadvantage** is that the model would need to infer information from context since it doesn't have the explicit statements and queries.
+
+Furthermore, multiple calls to the same LLM are needed, one for the prompt and one for the summarization. This can slow down the overall response generation.
+
+Choosing between `ConversationSummaryMemory` and `ConversationBufferMemory` is about speed, accuracy, and memory.  `ConversationSummaryMemory` frees up tokens to use, but `ConversationBufferMemory` increases token use significantly. 
+
+More **Pros and Cons** can be read below:
+
+| **Memory Type**              | **Pros**                                                                                                                      | **Cons**                                                                                                                                                              |
+| ---------------------------- | ----------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Conversation Buffer          | - Easiest implementation<br><br>- Ensures no<br>information loss within context window                                        | - Slower generation speed as more tokens are needed<br><br>- Only suitable for large-context LLMs<br><br>- Larger chat histories make information retrieval difficult |
+| Windowed Conversation Buffer | - Large-context LLMs are not needed unless<br>chat history is large<br><br>- No information loss over the last k interactions | - Only captures the last k interactions<br><br>- No compression of the last k interactions                                                                            |
+| Conversation Summary         | - Captures the full history<br><br>- Enables long conversations<br><br>- Reduces tokens needed to capture full history        | - An additional call is necessary for each<br>interaction<br><br>- Quality is reliant on the LLM’s summarization capabilities                                         |
+#### Agents: Creating a System of LLMs
