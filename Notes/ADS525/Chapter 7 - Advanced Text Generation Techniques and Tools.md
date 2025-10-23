@@ -538,3 +538,31 @@ In this example, we provided the LLM access to a calculator. But this could be e
 Although the tools they use are important, the driving force of many agent-based systems is the use a framework called **Re**asoning and **Act**ing (**ReAct**).
 
 #### The Driving Power Behind Agents: Step-By-Step Reasoning
+
+While LLMs have some "*reasoning*" abilities, they are not able to *"act*" on their own. 
+
+However, since LLMs are only able to generate text, they would need to be instructed to use specific queries to trigger actions.
+
+ReAct merges these two concepts (Reasoning and Acting) to ***allow reasoning to affect acting*** and ***allow acting to affect reasoning.*** 
+
+In practice, ReAct framework consists of **iteratively** following these **three steps**:
+- **Thought**
+- **Action**
+- **Observation**
+
+As illustrated below, the LLM is prompted to create a **thought** about the input prompt. This is basically *asking the LLM what it should do next and why.*
+
+Then, based on the thought, an **action** is triggered. This is generally an *external tool*, like a calculator.
+
+Finally, after the results of the action are returned to the LLM it **observes** the output, which is often *a summary of whatever result it retrieved.*
+
+![[Pasted image 20251023180013.png]]
+
+A more detailed example with an actual prompt:
+![[Pasted image 20251023180124.png]]
+
+
+During this process, the agent describes its **thoughts** (what it should do), its **actions** (what it will do), and its **observations** (the results of the action).
+
+This goes on iteratively (in cycle).
+
