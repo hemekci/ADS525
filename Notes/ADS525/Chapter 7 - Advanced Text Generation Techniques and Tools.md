@@ -9,6 +9,7 @@ These methods are all integrated with the LangChain framework.
 
 ### Model I/O: Loading Quantized Models with LangChain
 
+
 As in previous chapters, we will be using Phi-3 GGUF (GPT-Generated Unified Format) model variant.
 
 A **GGUF** model represents a compressed version of its original counterpart through a method called **quantization**, which *reduces the number of bits needed to represent the parameters of an LLM.*
