@@ -1,0 +1,180 @@
+{
+  "main": {
+    "id": "08b00ef9f6a760b4",
+    "type": "split",
+    "children": [
+      {
+        "id": "f7bc0ef904a8bdbb",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "d2bbf3b69b4c0418",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Notes/ADS525/Chapter 8 - Semantic Search and Retrieval-Augmented Generation.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "Chapter 8 - Semantic Search and Retrieval-Augmented Generation"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "1140af4518058e1f",
+    "type": "split",
+    "children": [
+      {
+        "id": "1b52393f97bfc2dc",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "573a6c2a76b6a6d6",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical",
+                "autoReveal": false
+              },
+              "icon": "lucide-folder-closed",
+              "title": "Files"
+            }
+          },
+          {
+            "id": "1077211bbc79085e",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              },
+              "icon": "lucide-search",
+              "title": "Search"
+            }
+          },
+          {
+            "id": "1b8b2ecbbade2b2e",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {},
+              "icon": "lucide-bookmark",
+              "title": "Bookmarks"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "right": {
+    "id": "24d525b5bdcd6c8b",
+    "type": "split",
+    "children": [
+      {
+        "id": "c44b96346afd2988",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "28b8c91000c0e2c7",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "file": "Notes/ADS525/Chapter 8 - Semantic Search and Retrieval-Augmented Generation.md",
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-coming-in",
+              "title": "Backlinks for Chapter 8 - Semantic Search and Retrieval-Augmented Generation"
+            }
+          },
+          {
+            "id": "4dae38517ae2e08a",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "file": "Notes/ADS525/Chapter 8 - Semantic Search and Retrieval-Augmented Generation.md",
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-going-out",
+              "title": "Outgoing links from Chapter 8 - Semantic Search and Retrieval-Augmented Generation"
+            }
+          },
+          {
+            "id": "07b0447c250c2c63",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-tags",
+              "title": "Tags"
+            }
+          },
+          {
+            "id": "dc1cb1427207d773",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "file": "Notes/ADS525/Chapter 8 - Semantic Search and Retrieval-Augmented Generation.md",
+                "followCursor": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-list",
+              "title": "Outline of Chapter 8 - Semantic Search and Retrieval-Augmented Generation"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "switcher:Open quick switcher": false,
+      "graph:Open graph view": false,
+      "canvas:Create new canvas": false,
+      "daily-notes:Open today's daily note": false,
+      "templates:Insert template": false,
+      "command-palette:Open command palette": false,
+      "bases:Create new base": false
+    }
+  },
+  "active": "d2bbf3b69b4c0418",
+  "lastOpenFiles": [
+    "Pasted image 20251030205221.png",
+    "Pasted image 20251030205029.png",
+    "Pasted image 20251030195417.png",
+    "Pasted image 20251030184518.png"
+  ]
+}

@@ -268,8 +268,77 @@ Michael Caine
 Note that the first result does not really answer the question despite it sharing the word “science” with the query.
 
 ##### Caveats of dense retrieval
-*Even *
+Dense retrieval *always* returns the results, even when the documents don't contain the answer. It doesn't have a built-in no answer. An **example** is provided below:
+```markdown
+Query: 'What is the mass of the moon?'
+Nearest neighbors:
+```
+![[Pasted image 20251030184518.png]]
+
+In cases like this, one possible heuristic is to set a **threshold level**. 
+
+A lot of search systems (e.g., search engines) present the user with the best info they can get and let the user decide if it's relevant or not. They also track information such as whether the user clicked on a result, or was satisfied by it, to improve future versions of the search system.
+
+Another caveat of dense retrieval is when a user wants to find an exact match for a specific phrase. **That's a case that's perfect for keyword matching.** That's also why a hybrid search system (that combines keyword matching and dense retrieval) is advised instead of relying solely on dense retrieval. 
+
+Dense retrieval systems also find it challenging to work properly other than the ones they are trained on
+
+Summary:
+- **No built-in relevance detection**
+  - Always returns results even when documents don't contain the
+  answer
+  - All results get similarity scores regardless of actual
+  relevance
+  - Solution: Set distance thresholds, track user clicks to
+  improve system
+
+- **Poor at exact phrase matching**
+  - Struggles when users need specific keyword/phrase matches
+  - Solution: Use hybrid search (semantic + keyword search like
+  BM25)
+
+- **Domain mismatch problems**
+  - Model trained on Wikipedia/internet data fails on specialized
+  domains (legal, medical, etc.)
+  - Solution: Include domain-specific data in training, or
+  fine-tune for target domain
+
+- **Text chunking challenges**
+  - Hard to handle answers spanning multiple sentences
+  - Design decision: How to chunk long texts optimally?
+  - Trade-off between chunk size and information completeness
+
+  ***Key takeaway:*** Dense retrieval works best combined with other
+  techniques (hybrid search, thresholding, domain adaptation)
+  rather than used alone.
 
 
+##### Chunking Long Texts
+As we've seen in early chapters, every model has a context size limit. This is a limitation of **Transformer LMs**. This means we cannot input very long texts.
 
+One way to solve this is by using *chunking*.
 
+An illustration of chunking is provided below.
+![[Pasted image 20251030195417.png]]
+
+##### One vector per document
+When doing this, there are some possibilities:
+1. Embedding only a **representative part of the text** (e.g., title, beginning of text).  This means embedding only the **title, or beginning of the document**. This method may cause in a lot of loss of information.
+2. Embedding the documents in **chunks**, **embedding those chunks**, and then **aggregating (averaging) those chunks into a single vector**. A downside is that it results in a highly compressed vector that loses a lot of the information of the document. 
+
+This approach can satisfy some information needs, but not others. This depends on whether the search is for a specific piece of information or a semantic concept.
+
+##### Multiple vectors per document
+This is basically **chunking the document into smaller pieces**, and **embedding those chunks, without aggregating them**.    
+
+Because it has full coverage of the text, it leads to a more expressive search index. 
+
+![[Pasted image 20251030205029.png]]
+
+The best way of chunking a long text will depend on the types of texts and queries your system anticipates. 
+![[Pasted image 20251030205221.png]]
+
+Was of chunking include:
+1. **Each sentence is a chunk.** 
+	The issue is that it may not capture the overall context of a document. 
+2. **Each **
