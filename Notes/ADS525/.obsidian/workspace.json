@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Chapter 8 - Semantic Search and Retrieval-Augmented Generation.md",
+                "file": "Chapter 9 - Multimodal Large Language Models.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "Chapter 8 - Semantic Search and Retrieval-Augmented Generation"
+              "title": "Chapter 9 - Multimodal Large Language Models"
             }
           }
         ]
@@ -173,6 +173,7 @@
   },
   "active": "3f767a737bb04bce",
   "lastOpenFiles": [
+    "Chapter 8 - Semantic Search and Retrieval-Augmented Generation.md",
     "Pasted image 20251103131326.png",
     "Pasted image 20251103124851.png",
     "Pasted image 20251102181521.png",
@@ -187,8 +188,6 @@
     "Pasted image 20251102140025.png",
     "Pasted image 20251102134821.png",
     "Pasted image 20251031154022.png",
-    "Pasted image 20251031153115.png",
-    "Chapter 8 - Semantic Search and Retrieval-Augmented Generation.md",
     "Chapter 7 - Advanced Text Generation Techniques and Tools.md",
     "Chapter 6 - Prompt Engineering.md",
     "Recording 20251018040621.m4a",

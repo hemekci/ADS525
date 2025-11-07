@@ -1,2 +1,6 @@
 venv/
 ads525/
+
+
+*.env
+*.gguf
