@@ -4,11 +4,11 @@
     "type": "split",
     "children": [
       {
-        "id": "09eddc35bcc829c4",
+        "id": "70b89ea98962973e",
         "type": "tabs",
         "children": [
           {
-            "id": "3f767a737bb04bce",
+            "id": "70205a146db7b10b",
             "type": "leaf",
             "state": {
               "type": "markdown",
@@ -171,15 +171,15 @@
       "audio-recorder:Start/stop recording": false
     }
   },
-  "active": "3f767a737bb04bce",
+  "active": "70205a146db7b10b",
   "lastOpenFiles": [
+    "Chapter 9 - Multimodal Large Language Models.md",
     "Chapter 8 - Semantic Search and Retrieval-Augmented Generation.md",
     "Pasted image 20251103131326.png",
     "Pasted image 20251103124851.png",
     "Pasted image 20251102181521.png",
     "Pasted image 20251102174945.png",
     "Pasted image 20251102173731.png",
-    "Chapter 9 - Multimodal Large Language Models.md",
     "Chapter 9 - Multimodal Large Language Models.md.tmp.8770.1762091689454",
     "Chapter 8 - Semantic Search and Retrieval-Augmented Generation.md.tmp.8770.1762089406916",
     "Chapter 8 - Semantic Search and Retrieval-Augmented Generation.md.tmp.8770.1762089228369",
