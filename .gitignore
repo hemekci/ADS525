@@ -1,6 +1,6 @@
 venv/
 ads525/
-
+Notes/ADS525
 
 *.env
 *.gguf
