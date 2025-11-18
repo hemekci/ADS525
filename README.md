@@ -1,10 +1,15 @@
 # ADS 525 - Generative AI Engineering with LLMs
 
-**Instructor:** Dr. Hakan Emekci  
-**Assistant:** Daniel Quillan Roxas  
-**Course Duration:** 14 Weeks  
-**Credits:** 3  
-**Prerequisites:** Python programming, basic machine learning concepts, linear algebra  
+**Instructor:** Dr. Hakan Emekci 
+  
+**Assistant:** Daniel Quillan Roxas
+  
+**Course Duration:** 14 Weeks
+  
+**Credits:** 3
+  
+**Prerequisites:** Python programming, basic machine learning concepts, linear algebra
+  
 
 ## Course Description
 
@@ -294,10 +299,10 @@ Students will work in teams of 2-3 to develop a substantial LLM-based applicatio
 ## Grading Rubric
 
 ### Final Project (60%)
-- **Technical Innovation:** 25%
-- **Implementation Quality:** 20%
-- **Evaluation & Analysis:** 10%
-- **Documentation:** 5%
+- **Technical Innovation:** 40%
+- **Implementation Quality:** 30%
+- **Evaluation & Analysis:** 20%
+- **Documentation:** 10%
 
 ### Homework Assignments (20%)
 - **Correctness:** 60%
@@ -353,3 +358,4 @@ Students with disabilities should contact the instructor to discuss accommodatio
 ---
 
 *This syllabus is subject to modifications based on class progress and emerging developments in the field.*
+
